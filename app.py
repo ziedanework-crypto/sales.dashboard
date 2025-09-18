@@ -2,61 +2,60 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# إعداد الصفحة
-st.set_page_config(page_title="لوحة متابعة المبيعات", layout="wide")
-st.title("📊 لوحة متابعة أداء مندوبي المبيعات")
-st.markdown("تحليل شامل لأداء المندوبين من حيث المبيعات وعدد العملاء والمتعاملين")
+# Page setup
+st.set_page_config(page_title="Regional Sales Dashboard", layout="wide")
+st.title("📍 Regional Sales Performance Dashboard")
+st.markdown("A comprehensive analysis of sales and customer performance across regions.")
 
-# البيانات
+# Data
 data = {
-    "اسم المندوب": ["إبراهيم جلال", "بدر", "هند", "آلاء", "جهاد", "شيماء وجيه", "أسماء عنبة", "جوري", "مصطفى", "حمدي"],
-    "الهدف الشهري": [80000, 50000, 30000, 30000, 30000, 6000, 6000, 30000, 60000, 60000],
-    "الحد الأدنى": [56000, 35000, 18000, 18000, 18000, 4200, 4200, 24000, 45000, 45000],
-    "صافي المبيعات": [81383.07, 18000, 20574.8, 12171.84, 11600, 4452.95, 4448.09, 25000, 81608.98, 82609.9],
-    "تحقيق الهدف مبيعات": [1.02, 0.36, 0.69, 0.41, 0.39, 0.74, 0.74, 0.83, 1.36, 1.38],
-    "عدد العملاء": [5, 11, 4, 3, 2, 1, 1, 3, 4, 4],
-    "عدد المتعاملين": [10, 23, 6, 5, 4, 2, 2, 5, 6, 6],
-    "تحقيق الهدف تعاملات": [0.5, 0.48, 0.67, 0.6, 0.5, 0.5, 0.5, 0.6, 0.67, 0.67]
+    "Area": ["01-SH", "02-KH", "03-QL", "04-QA", "05-BE", "06-TKH", "07-MAH", "08-AN", "09-ST"],
+    "Sales Target": [2850000, 3200000, 2800000, 3600000, 2800000, 1900000, 3000000, 1000000, 1500000],
+    "Sales": [1136113, 1005132, 960941, 1664922, 1119000, 634196, 644196, 314155, 297140],
+    "Sales %": [40, 31, 34, 46, 40, 33, 22, 31, 20],
+    "Customer Target": [220, 220, 170, 180, 140, 100, 20, 5, 5],
+    "Customers": [133, 155, 99, 104, 72, 56, 11, 3, 2],
+    "Customer %": [60, 70, 58, 58, 51, 56, 55, 60, 40]
 }
 
 df = pd.DataFrame(data)
 
-# مؤشرات الأداء الرئيسية
+# KPIs
 col1, col2, col3 = st.columns(3)
-col1.metric("📈 متوسط تحقيق المبيعات", f"{df['تحقيق الهدف مبيعات'].mean():.2f}")
-col2.metric("👥 متوسط تحقيق التعاملات", f"{df['تحقيق الهدف تعاملات'].mean():.2f}")
-col3.metric("🏅 أعلى مندوب مبيعات", df.loc[df['تحقيق الهدف مبيعات'].idxmax(), 'اسم المندوب'])
+col1.metric("📈 Avg. Sales Achievement", f"{df['Sales %'].mean():.1f}%")
+col2.metric("👥 Avg. Customer Achievement", f"{df['Customer %'].mean():.1f}%")
+col3.metric("🏅 Top Performing Area", df.loc[df['Sales %'].idxmax(), 'Area'])
 
-# رسم بياني: تحقيق المبيعات
-st.subheader("📊 معدل تحقيق المبيعات لكل مندوب")
-fig1 = px.bar(df, x="اسم المندوب", y="تحقيق الهدف مبيعات", color="تحقيق الهدف مبيعات",
-              text="تحقيق الهدف مبيعات", color_continuous_scale="Viridis")
+# Bar Chart: Sales %
+st.subheader("📊 Sales Achievement by Area")
+fig1 = px.bar(df, x="Area", y="Sales %", color="Sales %",
+              text="Sales %", color_continuous_scale="Viridis",
+              title="Sales Achievement (%)")
 st.plotly_chart(fig1, use_container_width=True)
 
-# رسم بياني: تحقيق التعاملات
-st.subheader("👥 معدل تحقيق التعاملات لكل مندوب")
-fig2 = px.bar(df, x="اسم المندوب", y="تحقيق الهدف تعاملات", color="تحقيق الهدف تعاملات",
-              text="تحقيق الهدف تعاملات", color_continuous_scale="Blues")
+# Bar Chart: Customer %
+st.subheader("👥 Customer Achievement by Area")
+fig2 = px.bar(df, x="Area", y="Customer %", color="Customer %",
+              text="Customer %", color_continuous_scale="Blues",
+              title="Customer Achievement (%)")
 st.plotly_chart(fig2, use_container_width=True)
 
-# رسم بياني: صافي المبيعات
-st.subheader("💰 صافي المبيعات مقارنة بالهدف الشهري")
-fig3 = px.scatter(df, x="الهدف الشهري", y="صافي المبيعات", color="اسم المندوب",
-                  size="صافي المبيعات", hover_name="اسم المندوب", title="صافي المبيعات مقابل الهدف")
+# Pie Chart: Sales Distribution
+st.subheader("🍩 Sales Distribution by Area")
+fig3 = px.pie(df, names="Area", values="Sales", title="Share of Total Sales")
 st.plotly_chart(fig3, use_container_width=True)
 
-# جدول البيانات
-st.subheader("📋 الجدول التفصيلي لأداء المندوبين")
+# Pie Chart: Customer Distribution
+st.subheader("🍩 Customer Distribution by Area")
+fig4 = px.pie(df, names="Area", values="Customers", title="Share of Total Customers")
+st.plotly_chart(fig4, use_container_width=True)
+
+# Full Data Table
+st.subheader("📋 Full Performance Table")
 st.dataframe(df)
 
-# فلترة حسب اسم المندوب
-selected = st.selectbox("🔍 اختر اسم المندوب لعرض التفاصيل", df["اسم المندوب"])
-filtered = df[df["اسم المندوب"] == selected]
-st.write("📌 بيانات المندوب المختار:")
+# Area Filter
+selected_area = st.selectbox("🔍 Select an Area to View Details", df["Area"])
+filtered = df[df["Area"] == selected_area]
+st.write("📌 Selected Area Details:")
 st.dataframe(filtered)
-
-# حركة إضافية: تنبيه إذا كان الأداء أقل من الحد الأدنى
-low_perf = df[df["تحقيق الهدف مبيعات"] < 0.5]
-if not low_perf.empty:
-    st.warning("⚠️ يوجد مندوبين أداءهم أقل من 50% في المبيعات:")
-    st.dataframe(low_perf[["اسم المندوب", "تحقيق الهدف مبيعات"]])
