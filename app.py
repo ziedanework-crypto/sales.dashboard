@@ -15,32 +15,54 @@ data = {
 
 df = pd.DataFrame(data)
 
-# واجهة لانا
-st.set_page_config(page_title="Lana's Dashboard", layout="wide")
-st.title("💋 داشبورد لانا - نبض الأداء")
+# إعداد الصفحة
+st.set_page_config(page_title="Dashboard الأداء", layout="wide")
+st.title("📊 لوحة متابعة الأداء حسب المنطقة")
 
 # عرض الجدول
-st.subheader("📋 جدول الأداء حسب المنطقة")
-st.dataframe(df.style.highlight_max(axis=0, color='lightpink'))
+st.subheader("📋 جدول الأداء")
+st.dataframe(df.style.highlight_max(axis=0, color='lightgreen'))
 
-# رسم دائري لنسبة المبيعات
-fig_sales_pie = px.pie(df, names="Area", values="Sales Per", title="🎯 نسبة تحقيق المبيعات", color_discrete_sequence=px.colors.sequential.RdPu)
+# رسم دائري لنسبة تحقيق المبيعات
+fig_sales_pie = px.pie(
+    df, names="Area", values="Sales Per",
+    title="نسبة تحقيق المبيعات",
+    color_discrete_sequence=px.colors.sequential.Teal
+)
 st.plotly_chart(fig_sales_pie, use_container_width=True)
 
-# رسم دائري لنسبة العملاء
-fig_customer_pie = px.pie(df, names="Area", values="Customer Per", title="👥 نسبة تحقيق العملاء", color_discrete_sequence=px.colors.sequential.Purples)
+# رسم دائري لنسبة تحقيق العملاء
+fig_customer_pie = px.pie(
+    df, names="Area", values="Customer Per",
+    title="نسبة تحقيق العملاء",
+    color_discrete_sequence=px.colors.sequential.Blues
+)
 st.plotly_chart(fig_customer_pie, use_container_width=True)
 
-# رسم خطي يشبه رسم القلب
-fig_heartbeat = px.line(df, x="Area", y="Sales Per", title="💓 نبض الأداء البيعي", markers=True, line_shape="spline", color_discrete_sequence=["deeppink"])
-st.plotly_chart(fig_heartbeat, use_container_width=True)
+# رسم خطي لنسبة المبيعات (شكل نبض)
+fig_sales_line = px.line(
+    df, x="Area", y="Sales Per",
+    title="تطور نسبة المبيعات",
+    markers=True, line_shape="spline",
+    color_discrete_sequence=["green"]
+)
+st.plotly_chart(fig_sales_line, use_container_width=True)
 
-# رسم خطي للعملاء
-fig_customer_line = px.line(df, x="Area", y="Customer Per", title="💓 نبض الأداء للعملاء", markers=True, line_shape="spline", color_discrete_sequence=["purple"])
+# رسم خطي لنسبة العملاء
+fig_customer_line = px.line(
+    df, x="Area", y="Customer Per",
+    title="تطور نسبة العملاء",
+    markers=True, line_shape="spline",
+    color_discrete_sequence=["blue"]
+)
 st.plotly_chart(fig_customer_line, use_container_width=True)
 
-# لمسة ختامية من لانا
+# ملخص ختامي
 st.markdown("""
-> 😘 لانا بتقولك: البيانات دي فيها شغل جامد، بس لسه فيها شوية مناطق محتاجة دفعة.  
-> يلا نخلّي كل مؤشر يرقص، وكل رقم يلمع ✨
+### 📌 ملاحظات تحليلية:
+- أعلى نسبة مبيعات: `04-QA` بنسبة 50%
+- أعلى نسبة عملاء: `02-kh` بنسبة 72%
+- أقل أداء مبيعات: `09-ST` بنسبة 22%
+- مناطق تحتاج تدخل: `07-MAH`, `09-ST`
+
 """)
