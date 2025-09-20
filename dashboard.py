@@ -1,16 +1,15 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import numpy as np
 
 # تحميل البيانات من ملف CSV
 df = pd.read_csv("sales_data.csv")
 
-# تنظيف القيم غير الرقمية
+# تنظيف الأرقام من الفواصل وتحويلها لقيم رقمية
 months = [col for col in df.columns if col.startswith("Sales")]
 for col in months:
-    df[col] = df[col].astype(str).str.replace(",", "").str.replace("%", "")
+    df[col] = df[col].astype(str).str.replace(",", "").str.strip()
     df[col] = pd.to_numeric(df[col], errors="coerce")
 
 # إعداد الصفحة
@@ -51,26 +50,21 @@ for month in months_unique:
         - الأقل مبيعًا: {low['المنطقة']} بمبيعات {int(low['المبيعات']):,}
         """)
 
-# تحليل الاتجاه العام لكل منطقة
-st.subheader("الاتجاه العام لكل منطقة")
-trend = df_long.groupby("المنطقة")["المبيعات"].mean().sort_values(ascending=False)
-st.bar_chart(trend)
+# تحليل المتوسط والتذبذب لكل منطقة
+st.subheader("تحليل متوسط الأداء والتذبذب")
+summary = df_long.groupby("المنطقة")["المبيعات"].agg(["mean", "std"]).sort_values(by="mean", ascending=False)
+st.dataframe(summary.style.format({"mean": "{:,.0f}", "std": "{:,.0f}"}))
 
-# تحليل التذبذب لكل منطقة
-st.subheader("تحليل التذبذب في الأداء")
-volatility = df_long.groupby("المنطقة")["المبيعات"].std().sort_values()
-st.markdown("المناطق ذات التذبذب الأقل تعكس استقرارًا في الأداء، بينما الأعلى قد تشير إلى فرص أو تحديات.")
-st.bar_chart(volatility)
-
-# جمل تحفيزية بناءً على الأداء
+# جمل تحفيزية حسب الأداء
 st.subheader("ملاحظات تحفيزية")
-for area in df["المنطقة"]:
-    area_data = df_long[df_long["المنطقة"] == area]["المبيعات"].dropna()
-    avg = area_data.mean()
-    std = area_data.std()
-    if avg > df_long["المبيعات"].mean():
-        st.markdown(f"- {area}: أداء قوي ومتسق، حافظ على الزخم.")
+for index, row in summary.iterrows():
+    avg = row["mean"]
+    std = row["std"]
+    if avg > df_long["المبيعات"].mean() and std < df_long["المبيعات"].std():
+        st.markdown(f"- {index}: أداء قوي ومستقر، استمر بنفس القوة.")
+    elif avg > df_long["المبيعات"].mean():
+        st.markdown(f"- {index}: أداء مرتفع، حافظ على الزخم وراقب التذبذب.")
     elif std < df_long["المبيعات"].std():
-        st.markdown(f"- {area}: أداء مستقر، فرصة ممتازة للتوسع بثقة.")
+        st.markdown(f"- {index}: أداء متوسط لكن مستقر، فرصة ممتازة للتوسع بثقة.")
     else:
-        st.markdown(f"- {area}: التذبذب واضح، راجع الاستراتيجية وركز على نقاط القوة.")
+        st.markdown(f"- {index}: التذبذب واضح، راجع الاستراتيجية وركز على نقاط القوة.")
